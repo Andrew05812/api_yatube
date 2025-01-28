@@ -1,7 +1,6 @@
-from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import PostSerializer, GroupSerializer, CommentSerializer
 from .permissions import ApiAuthorPermission
@@ -18,7 +17,7 @@ class PostViewSet(viewsets.ModelViewSet):
     #     if serializer.instance.author != self.request.user:
     #         raise PermissionDenied('Изменение чужого контента запрещено!')
     #     return super().perform_update(serializer)
-    
+
     # def perform_destroy(self, serializer):
     #     if serializer.instance.author != self.request.user:
     #         raise PermissionDenied('Удаление чужого контента запрещено!')
@@ -26,6 +25,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
@@ -41,8 +41,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         post_id = self.kwargs.get('post_id')
         new_queryset = Comment.objects.filter(post=post_id)
         return new_queryset
-    
+
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         serializer.save(author=self.request.user, post=post)
-
